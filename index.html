@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kim Millioner Bo'ladi? - Premium 3D Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti for Victory -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            700: '#a16207',
+                        },
+                        ruby: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #030208;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 3D Glassmorphism Cards & Gold Borders */
+        .glass-3d-card {
+            background: linear-gradient(135deg, rgba(15, 10, 25, 0.85) 0%, rgba(30, 10, 20, 0.90) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(239, 68, 68, 0.15);
+        }
+
+        .gold-metallic-border {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #854d0e 100%) 1;
+        }
+
+        .ruby-gold-button {
+            background: linear-gradient(180deg, #dc2626 0%, #991b1b 50%, #450a0a 100%);
+            border: 2px solid #facc15;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.5), inset 0 2px 4px rgba(254, 240, 138, 0.4);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ruby-gold-button:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(234, 179, 8, 0.6), inset 0 2px 6px rgba(255, 255, 255, 0.6);
+            background: linear-gradient(180deg, #ef4444 0%, #b91c1c 50%, #7f1d1d 100%);
+        }
+
+        .ruby-gold-button:active:not(:disabled) {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, rgba(30, 10, 20, 0.9) 0%, rgba(15, 10, 25, 0.9) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            transition: all 0.2s ease-out;
+        }
+        
+        .menu-button:hover {
+            border-color: #facc15;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Hexagonal Option & Question Boxes */
+        .hex-shape {
+            clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
+        }
+
+        /* Tilt 3D Effect */
+        .tilt-card {
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        /* Pulse animations for timer */
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8)); }
+            50% { transform: scale(1.06); filter: drop-shadow(0 0 16px rgba(250, 204, 21, 1)); }
+        }
+
+        .timer-warning {
+            animation: timerPulse 0.6s infinite alternate;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0612;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b91c1c;
+            border-radius: 3px;
+            border: 1px solid #facc15;
+        }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #facc15;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #eab308;
+        }
+    </style>
+
+    <!-- Firebase System Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kim-millioner-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyDummyKeyForLocalTestingMode123",
+            authDomain: "dummy.firebaseapp.com",
+            projectId: "dummy-project",
+            storageBucket: "dummy.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:123456789"
+        };
+
+        let app, db, auth, currentUser = null;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
+
+            initAuth().catch(() => {});
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    listenToGlobalLeaderboard();
+                    syncUserStatsWithCloud();
+                }
+            });
+        } catch(e) {
+            console.log("Firebase init note:", e);
+        }
+
+        async function syncUserStatsWithCloud() {
+            if (!db || !currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                const uStats = window.getUserStats ? window.getUserStats() : { gamesPlayed: 0, wins: 0, maxPrizeVal: 0, maxPrizeStr: '0 SO\'M', totalEarnings: 0 };
+                const userName = window.getPlayerName ? window.getPlayerName() : 'Bilimdon';
+                const countryCode = localStorage.getItem('millionaire_country_code') || 'uz';
+
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if ((cloudData.highestPrizeVal || 0) > uStats.maxPrizeVal) {
+                        uStats.maxPrizeVal = cloudData.highestPrizeVal;
+                        uStats.maxPrizeStr = cloudData.highestPrizeStr || '0 SO\'M';
+                    }
+                    if ((cloudData.gamesPlayed || 0) > uStats.gamesPlayed) {
+                        uStats.gamesPlayed = cloudData.gamesPlayed;
+                    }
+                    if ((cloudData.totalEarnings || 0) > uStats.totalEarnings) {
+                        uStats.totalEarnings = cloudData.totalEarnings;
+                    }
+                    if (window.saveUserStats) window.saveUserStats(uStats);
+                } else if (uStats.gamesPlayed > 0 || uStats.maxPrizeVal > 0) {
+                    await setDoc(docRef, {
+                        uid: currentUser.uid,
+                        name: userName,
+                        countryCode: countryCode,
+                        highestPrizeStr: uStats.maxPrizeStr,
+                        highestPrizeVal: uStats.maxPrizeVal,
+                        gamesPlayed: uStats.gamesPlayed,
+                        totalEarnings: uStats.totalEarnings,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+            } catch(e) {
+                console.log("Error syncing stats:", e);
+            }
+        }
+        window.syncUserStatsWithCloud = syncUserStatsWithCloud;
+
+        function listenToGlobalLeaderboard() {
+            if (!db || !currentUser) return;
+            const lbRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+            
+            onSnapshot(lbRef, (snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => {
+                    list.push({ id: doc.id, ...doc.data() });
+                });
+                list.sort((a, b) => (b.highestPrizeVal || 0) - (a.highestPrizeVal || 0));
+                window.globalLeaderboardData = list;
+                if (window.renderLeaderboard) window.renderLeaderboard();
+            }, (err) => {});
+        }
+
+        window.saveScoreToCloud = async function(prizeString, prizeNumeric, gameCompleted) {
+            const userName = window.getPlayerName();
+            const uStats = window.getUserStats();
+            const countryCode = localStorage.getItem('millionaire_country_code') || 'uz';
+
+            uStats.gamesPlayed += 1;
+            uStats.totalEarnings += prizeNumeric;
+            if (prizeNumeric > uStats.maxPrizeVal) {
+                uStats.maxPrizeVal = prizeNumeric;
+                uStats.maxPrizeStr = prizeString;
+            }
+            if (gameCompleted) uStats.wins += 1;
+            window.saveUserStats(uStats);
+
+            if (db && currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', currentUser.uid);
+                    await setDoc(docRef, {
+                        uid: currentUser.uid,
+                        name: userName,
+                        countryCode: countryCode,
+                        highestPrizeStr: uStats.maxPrizeStr,
+                        highestPrizeVal: uStats.maxPrizeVal,
+                        gamesPlayed: uStats.gamesPlayed,
+                        totalEarnings: uStats.totalEarnings,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                } catch(err) {}
+            }
+        };
+
+        window.db = db;
+        window.appId = appId;
+    </script>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col items-center justify-between p-2 sm:p-4 relative">
+
+    <!-- Dynamic 3D Particle Canvas Background -->
+    <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0 w-full h-full"></canvas>
+
+    <!-- ==================== 1. SPLASH SCREEN (NAME INPUT) ==================== -->
+    <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-[#030208]/80 backdrop-blur-sm text-center transition-opacity duration-500">
+        <div class="relative mb-6">
+            <div class="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-amber-600 via-red-600 to-amber-300 p-1 animate-spin-slow shadow-[0_0_60px_rgba(245,158,11,0.5)]">
+                <div class="w-full h-full bg-slate-950 rounded-full flex items-center justify-center">
+                    <i class="fas fa-crown text-6xl sm:text-7xl text-amber-400 drop-shadow-[0_0_20px_rgba(234,179,8,0.8)]"></i>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 tracking-wider mb-2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]">
+            KIM MILLIONER BO'LADI?
+        </h1>
+        <p class="text-amber-500/80 font-medium text-xs sm:text-sm tracking-widest uppercase mb-8">O'zbekiston Milliy Intellektual Shou-O'yini</p>
+
+        <div class="w-full max-w-sm glass-3d-card p-6 rounded-2xl gold-metallic-border shadow-2xl mb-4">
+            <label class="block text-left text-xs text-amber-400/90 font-bold uppercase tracking-wider mb-2">Ismingizni kiriting:</label>
+            <div class="relative mb-4">
+                <input type="text" id="playerNameInput" maxlength="15" placeholder="Masalan: Shahzod" class="w-full bg-slate-950/90 border border-amber-500/50 rounded-xl px-4 py-3 text-amber-300 font-bold focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30 text-center text-lg placeholder-slate-600">
+                <i class="fas fa-user-edit absolute right-3 top-3.5 text-amber-500/50"></i>
+            </div>
+            <button onclick="saveNameAndGoToMenu()" class="w-full ruby-gold-button py-3.5 rounded-xl font-black text-amber-300 text-lg tracking-wider font-cinzel shadow-xl">
+                KIRISH <i class="fas fa-sign-in-alt ml-2 text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 2. MAIN MENU SCREEN ==================== -->
+    <div id="mainMenuScreen" class="fixed inset-0 z-40 flex flex-col items-center justify-center p-4 bg-transparent hidden transition-opacity duration-500">
+        
+        <!-- User Badge -->
+        <div class="absolute top-4 right-4 sm:top-6 sm:right-6">
+            <div class="text-xs sm:text-sm flex items-center space-x-2 cursor-pointer glass-3d-card py-2 px-4 rounded-xl gold-metallic-border shadow-lg" onclick="openProfileModal()">
+                <img id="menuCountryFlag" src="https://flagcdn.com/w40/uz.png" alt="Davlat" class="w-6 h-4 object-cover rounded shadow border border-amber-500/50">
+                <span class="text-slate-300 font-medium hidden sm:inline">Salom,</span>
+                <span id="menuPlayerName" class="font-bold text-amber-400 font-cinzel tracking-wider text-sm sm:text-base">SHAHZOD</span>
+                <i class="fas fa-cog text-amber-500/60 ml-2"></i>
+            </div>
+        </div>
+
+        <div class="relative mb-8 text-center flex flex-col items-center">
+            <i class="fas fa-crown text-6xl text-amber-400 drop-shadow-[0_0_20px_rgba(234,179,8,0.8)] mb-4"></i>
+            <h1 class="text-4xl sm:text-6xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-amber-700 tracking-wider mb-2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]">
+                MILLIONER
+            </h1>
+        </div>
+
+        <!-- Menu Navigation -->
+        <div class="w-full max-w-sm flex flex-col space-y-3 z-10">
+            <button onclick="startGameFromMenu()" class="tilt-card ruby-gold-button w-full py-4 rounded-2xl font-black text-amber-300 text-xl tracking-widest font-cinzel shadow-[0_0_30px_rgba(220,38,38,0.4)] mb-2">
+                O'YINNI BOSHLASH <i class="fas fa-play ml-2 text-sm"></i>
+            </button>
+            
+            <button onclick="openLeaderboardModal()" class="tilt-card menu-button w-full py-3.5 rounded-xl font-bold text-slate-200 text-sm tracking-wide flex items-center justify-center space-x-2">
+                <i class="fas fa-globe text-amber-400 text-lg"></i>
+                <span>DUNYO REYTINGI</span>
+            </button>
+            
+            <button onclick="openStatsModal()" class="tilt-card menu-button w-full py-3.5 rounded-xl font-bold text-slate-200 text-sm tracking-wide flex items-center justify-center space-x-2">
+                <i class="fas fa-chart-pie text-blue-400 text-lg"></i>
+                <span>STATISTIKA</span>
+            </button>
+            
+            <button onclick="openSettingsModal()" class="tilt-card menu-button w-full py-3.5 rounded-xl font-bold text-slate-200 text-sm tracking-wide flex items-center justify-center space-x-2">
+                <i class="fas fa-sliders-h text-slate-400 text-lg"></i>
+                <span>SOZLAMALAR</span>
+            </button>
+
+            <button onclick="openRulesModal()" class="tilt-card menu-button w-full py-3.5 rounded-xl font-bold text-slate-200 text-sm tracking-wide flex items-center justify-center space-x-2">
+                <i class="fas fa-book text-emerald-400 text-lg"></i>
+                <span>QOIDALAR</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ==================== 3. MAIN GAME AREA ==================== -->
+    <header id="mainHeader" class="w-full max-w-4xl flex justify-between items-center py-3 px-4 sm:px-5 glass-3d-card gold-metallic-border rounded-2xl mb-3 relative z-20 shadow-[0_0_30px_rgba(245,158,11,0.2)] hidden">
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <!-- Home Button -->
+            <button onclick="requestReturnToMenu()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-500/50 flex items-center justify-center text-slate-300 hover:text-white transition hover:scale-105 shadow-md" title="Asosiy Menyu">
+                <i class="fas fa-home text-lg"></i>
+            </button>
+            <!-- Audio Button -->
+            <button id="soundToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-amber-500/50 flex items-center justify-center text-amber-400 hover:text-amber-300 transition hover:scale-105 shadow-md" title="Ovoz">
+                <i class="fas fa-volume-up text-lg" id="soundIcon"></i>
+            </button>
+            <!-- Pause Button -->
+            <button onclick="togglePause()" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-blue-500/50 flex items-center justify-center text-blue-400 hover:text-blue-300 transition hover:scale-105 shadow-md" title="Pauza">
+                <i class="fas fa-pause text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Timer circular display -->
+        <div class="flex items-center space-x-2 bg-slate-950/80 py-1.5 px-4 rounded-full border border-red-500/60 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+            <i class="fas fa-stopwatch text-amber-400 animate-pulse text-lg"></i>
+            <span id="timerDisplay" class="font-black text-xl font-cinzel text-red-500 min-w-[28px] text-center">30</span>
+            <span class="text-[10px] font-bold text-slate-400">SEK</span>
+        </div>
+
+        <!-- Cash Out Button -->
+        <button onclick="takeMoneyAndExit()" class="ruby-gold-button px-3.5 py-1.5 rounded-xl font-bold text-amber-300 text-xs sm:text-sm tracking-wide flex items-center space-x-1.5 shadow-lg">
+            <i class="fas fa-coins text-amber-400 hidden sm:inline"></i>
+            <span>PULLARNI OLISH</span>
+        </button>
+    </header>
+
+    <main id="gameMainArea" class="w-full max-w-4xl flex-1 flex flex-col justify-between relative z-10 hidden pb-4">
+        
+        <!-- TOP LIFELINES & LEVEL BAR -->
+        <div class="glass-3d-card p-3 rounded-2xl gold-metallic-border flex justify-between items-center mb-3">
+            <!-- Lifeline Buttons -->
+            <div class="flex space-x-2 sm:space-x-3">
+                <button id="life5050" onclick="use5050()" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button font-black text-amber-300 text-xs sm:text-sm flex flex-col items-center justify-center transition hover:scale-105" title="50/50">
+                    <span class="font-cinzel">50:50</span>
+                </button>
+                <button id="lifePhone" onclick="usePhone()" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button text-amber-300 text-base sm:text-lg flex items-center justify-center transition hover:scale-105" title="Do'stga qo'ng'iroq">
+                    <i class="fas fa-phone-alt"></i>
+                </button>
+                <button id="lifeAudience" onclick="useAudience()" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button text-amber-300 text-base sm:text-lg flex items-center justify-center transition hover:scale-105" title="Zal yordami">
+                    <i class="fas fa-users"></i>
+                </button>
+            </div>
+
+            <!-- Current Level & Prize indicator -->
+            <div class="text-right cursor-pointer flex-1 mr-3" onclick="openMoneyLadderModal()">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                    Bosqich: <span id="currentLevelNum" class="text-amber-400">1/15</span>
+                </div>
+                <div id="currentPrizeText" class="font-black text-amber-400 font-cinzel text-base sm:text-xl drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]">
+                    100 000 SO'M
+                </div>
+            </div>
+
+            <button onclick="openMoneyLadderModal()" class="w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/40 text-amber-400 flex items-center justify-center hover:bg-slate-800 transition shadow-md">
+                <i class="fas fa-layer-group"></i>
+            </button>
+        </div>
+
+        <!-- PROGRESS TIMER BAR -->
+        <div class="w-full bg-slate-950/80 rounded-full h-2.5 mb-4 border border-red-900/50 overflow-hidden shadow-inner">
+            <div id="timerProgressBar" class="bg-gradient-to-r from-amber-500 via-red-500 to-amber-300 h-full w-full transition-all duration-1000 linear"></div>
+        </div>
+
+        <!-- QUESTION BOX -->
+        <div class="tilt-card my-auto">
+            <div class="glass-3d-card p-6 sm:p-8 rounded-3xl border-2 border-amber-500/60 text-center relative shadow-[0_0_35px_rgba(220,38,38,0.25)] min-h-[160px] flex items-center justify-center">
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-0.5 bg-gradient-to-r from-red-800 via-amber-600 to-red-800 rounded-full border border-amber-400 text-[11px] font-black tracking-widest text-amber-200 uppercase font-cinzel shadow-md">
+                    SAVOL <span id="questionNumBadge">1</span>
+                </div>
+                <h2 id="questionText" class="text-base sm:text-xl md:text-2xl font-bold text-slate-100 leading-relaxed font-montserrat">
+                    Savol yuklanmoqda...
+                </h2>
+            </div>
+        </div>
+
+        <!-- OPTIONS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
+            <button id="optBtnA" onclick="selectOption('A')" class="tilt-card glass-3d-card p-4 rounded-2xl border border-amber-500/40 hover:border-amber-400 text-left flex items-center transition group relative overflow-hidden">
+                <span class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-400 font-black font-cinzel text-sm flex items-center justify-center mr-3 group-hover:bg-amber-500 group-hover:text-slate-950 transition">A:</span>
+                <span id="optTextA" class="text-sm sm:text-base font-semibold text-slate-200">Variant A</span>
+            </button>
+            <button id="optBtnB" onclick="selectOption('B')" class="tilt-card glass-3d-card p-4 rounded-2xl border border-amber-500/40 hover:border-amber-400 text-left flex items-center transition group relative overflow-hidden">
+                <span class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-400 font-black font-cinzel text-sm flex items-center justify-center mr-3 group-hover:bg-amber-500 group-hover:text-slate-950 transition">B:</span>
+                <span id="optTextB" class="text-sm sm:text-base font-semibold text-slate-200">Variant B</span>
+            </button>
+            <button id="optBtnC" onclick="selectOption('C')" class="tilt-card glass-3d-card p-4 rounded-2xl border border-amber-500/40 hover:border-amber-400 text-left flex items-center transition group relative overflow-hidden">
+                <span class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-400 font-black font-cinzel text-sm flex items-center justify-center mr-3 group-hover:bg-amber-500 group-hover:text-slate-950 transition">C:</span>
+                <span id="optTextC" class="text-sm sm:text-base font-semibold text-slate-200">Variant C</span>
+            </button>
+            <button id="optBtnD" onclick="selectOption('D')" class="tilt-card glass-3d-card p-4 rounded-2xl border border-amber-500/40 hover:border-amber-400 text-left flex items-center transition group relative overflow-hidden">
+                <span class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/60 text-amber-400 font-black font-cinzel text-sm flex items-center justify-center mr-3 group-hover:bg-amber-500 group-hover:text-slate-950 transition">D:</span>
+                <span id="optTextD" class="text-sm sm:text-base font-semibold text-slate-200">Variant D</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-sm p-6 rounded-3xl gold-metallic-border relative">
+            <button onclick="closeModal('settingsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold font-cinzel text-amber-400 text-center mb-6 flex items-center justify-center space-x-2">
+                <i class="fas fa-sliders-h text-amber-400"></i>
+                <span>SOZLAMALAR</span>
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- Sound Toggle -->
+                <div class="bg-slate-950/80 p-4 rounded-xl border border-amber-500/30 flex justify-between items-center">
+                    <div>
+                        <div class="text-sm font-bold text-slate-200">Ovoz & Effektlar</div>
+                        <div class="text-[10px] text-slate-400">Musiqa va tugma ovozlari</div>
+                    </div>
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="settingsSoundToggle" class="sr-only toggle-checkbox" checked onchange="toggleAudioFromSettings()">
+                            <div class="block bg-slate-700 w-10 h-6 rounded-full border border-slate-500 toggle-label transition-colors"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Language Selection -->
+                <div class="bg-slate-950/80 p-4 rounded-xl border border-amber-500/30">
+                    <div class="text-sm font-bold text-slate-200 mb-2">Dastur tili</div>
+                    <select class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-amber-300 focus:outline-none focus:border-amber-500 cursor-pointer">
+                        <option value="uz">O'zbekcha</option>
+                        <option value="ru" disabled>Русский (Tez orada)</option>
+                        <option value="en" disabled>English (Coming soon)</option>
+                    </select>
+                </div>
+                
+                <button onclick="openProfileModal(); closeModal('settingsModal');" class="menu-button w-full py-2.5 rounded-xl font-bold text-slate-300 text-sm">
+                    Ismni O'zgartirish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RETURN TO MENU MODAL (CONFIRM) -->
+    <div id="returnMenuModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-sm p-8 rounded-3xl gold-metallic-border text-center shadow-[0_0_50px_rgba(239,68,68,0.4)]">
+            <div class="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-400 flex items-center justify-center mx-auto mb-4 text-3xl text-red-400">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <h2 class="text-xl font-black font-cinzel text-red-400 mb-2">MENYUGA QAYTISH</h2>
+            <p class="text-xs text-slate-300 mb-6">Siz haqiqatan ham menyuga qaytmoqchimisiz? Ushbu o'yindagi yutug'ingiz bekor qilinadi.</p>
+            <button onclick="confirmReturnToMenu()" class="ruby-gold-button !bg-gradient-to-b !from-red-600 !to-red-900 !border-red-400 w-full py-3 rounded-xl font-black text-white text-base shadow-xl mb-3">
+                HA, QAYTISH
+            </button>
+            <button onclick="cancelReturnToMenu()" class="menu-button w-full py-2.5 rounded-xl font-bold text-slate-300 text-sm">
+                YO'Q, DAVOM ETISH
+            </button>
+        </div>
+    </div>
+
+    <!-- PAUSE MODAL -->
+    <div id="pauseModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-sm p-8 rounded-3xl gold-metallic-border text-center shadow-[0_0_50px_rgba(59,130,246,0.3)]">
+            <div class="w-16 h-16 rounded-full bg-blue-500/20 border-2 border-blue-400 flex items-center justify-center mx-auto mb-4 text-3xl text-blue-400">
+                <i class="fas fa-pause"></i>
+            </div>
+            <h2 class="text-2xl font-black font-cinzel text-blue-400 mb-2">PAUZA</h2>
+            <p class="text-xs text-slate-300 mb-6">O'yin vaqtincha to'xtatildi.</p>
+            <button onclick="togglePause()" class="ruby-gold-button !bg-gradient-to-b !from-blue-600 !to-blue-900 !border-blue-400 w-full py-3 rounded-xl font-black text-white text-base shadow-xl mb-3">
+                DAVOM ETISH <i class="fas fa-play ml-2"></i>
+            </button>
+            <button onclick="takeMoneyAndExitFromPause()" class="menu-button w-full py-2.5 rounded-xl font-bold text-amber-400 text-sm">
+                PULLARNI OLIB CHIQISH
+            </button>
+        </div>
+    </div>
+
+    <!-- MONEY LADDER MODAL -->
+    <div id="moneyLadderModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-5 rounded-3xl gold-metallic-border relative">
+            <button onclick="closeModal('moneyLadderModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold font-cinzel text-amber-400 text-center mb-4">SOVRINLAR ZINAPOYASI</h3>
+            <div id="ladderList" class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
+                <!-- Dynamic Ladder Items -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CALL FRIEND MODAL -->
+    <div id="friendModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-6 rounded-3xl gold-metallic-border text-center">
+            <div class="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto mb-3 text-2xl text-amber-400">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3 class="text-lg font-bold text-amber-400 mb-1">Ekspert Do'stingiz: Professor Rustam</h3>
+            <p class="text-xs text-slate-400 mb-4">Telefon orqali bog'lanindi...</p>
+            <div class="bg-slate-950/90 p-4 rounded-xl border border-amber-500/30 text-left text-sm text-slate-200 mb-5 leading-relaxed font-medium" id="friendDialogText">
+                "Salom! Meningcha, bu savolga to'g'ri javob..."
+            </div>
+            <button onclick="closeModal('friendModal')" class="ruby-gold-button w-full py-2.5 rounded-xl font-bold text-amber-300">
+                TUSHUNDIM
+            </button>
+        </div>
+    </div>
+
+    <!-- AUDIENCE POLL MODAL -->
+    <div id="audienceModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-6 rounded-3xl gold-metallic-border text-center">
+            <h3 class="text-lg font-bold font-cinzel text-amber-400 mb-4">ZAL YORDAMI NATIJALARI</h3>
+            <div class="flex justify-around items-end h-44 bg-slate-950/80 p-4 rounded-2xl border border-amber-500/30 mb-5">
+                <div class="flex flex-col items-center">
+                    <span id="audPctA" class="text-xs font-bold text-amber-400 mb-1">0%</span>
+                    <div id="audBarA" class="w-8 bg-gradient-to-t from-red-800 to-amber-400 rounded-t-lg transition-all duration-1000" style="height: 0%;"></div>
+                    <span class="text-xs font-bold text-slate-300 mt-2">A</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="audPctB" class="text-xs font-bold text-amber-400 mb-1">0%</span>
+                    <div id="audBarB" class="w-8 bg-gradient-to-t from-red-800 to-amber-400 rounded-t-lg transition-all duration-1000" style="height: 0%;"></div>
+                    <span class="text-xs font-bold text-slate-300 mt-2">B</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="audPctC" class="text-xs font-bold text-amber-400 mb-1">0%</span>
+                    <div id="audBarC" class="w-8 bg-gradient-to-t from-red-800 to-amber-400 rounded-t-lg transition-all duration-1000" style="height: 0%;"></div>
+                    <span class="text-xs font-bold text-slate-300 mt-2">C</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span id="audPctD" class="text-xs font-bold text-amber-400 mb-1">0%</span>
+                    <div id="audBarD" class="w-8 bg-gradient-to-t from-red-800 to-amber-400 rounded-t-lg transition-all duration-1000" style="height: 0%;"></div>
+                    <span class="text-xs font-bold text-slate-300 mt-2">D</span>
+                </div>
+            </div>
+            <button onclick="closeModal('audienceModal')" class="ruby-gold-button w-full py-2.5 rounded-xl font-bold text-amber-300">
+                YOPISH
+            </button>
+        </div>
+    </div>
+
+    <!-- LEADERBOARD MODAL -->
+    <div id="leaderboardModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-6 rounded-3xl gold-metallic-border relative">
+            <button onclick="closeModal('leaderboardModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold font-cinzel text-amber-400 text-center mb-4 flex items-center justify-center space-x-2">
+                <i class="fas fa-globe text-amber-400"></i>
+                <span>DUNYO REYTINGI</span>
+            </h3>
+            <div id="leaderboardList" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                <div class="text-center py-8 text-slate-400 text-sm">Yuklanmoqda...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS MODAL -->
+    <div id="statsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-6 rounded-3xl gold-metallic-border relative text-center">
+            <button onclick="closeModal('statsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold font-cinzel text-amber-400 mb-4">SHAXSIY STATISTIKA</h3>
+            <div class="grid grid-cols-2 gap-3 text-left">
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-amber-500/30">
+                    <div class="text-[10px] text-slate-400 uppercase">O'ynalgan O'yinlar</div>
+                    <div id="statGamesPlayed" class="text-xl font-bold text-amber-400 font-cinzel">0</div>
+                </div>
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-amber-500/30">
+                    <div class="text-[10px] text-slate-400 uppercase">G'alabalar</div>
+                    <div id="statWins" class="text-xl font-bold text-emerald-400 font-cinzel">0</div>
+                </div>
+                <div class="col-span-2 bg-slate-950/80 p-3 rounded-xl border border-amber-500/30">
+                    <div class="text-[10px] text-slate-400 uppercase">Rekord Yutuq</div>
+                    <div id="statMaxPrize" class="text-lg font-bold text-amber-300 font-cinzel">0 SO'M</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE EDIT MODAL -->
+    <div id="profileModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-sm p-6 rounded-3xl gold-metallic-border text-center relative">
+            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-lg font-bold font-cinzel text-amber-400 mb-4">PROFILNI TAHRIRLASH</h3>
+            <input type="text" id="editPlayerNameInput" maxlength="15" class="w-full bg-slate-950 border border-amber-500/50 rounded-xl px-4 py-3 text-amber-300 font-bold focus:outline-none text-center mb-4">
+            <button onclick="saveProfileName()" class="ruby-gold-button w-full py-2.5 rounded-xl font-bold text-amber-300">
+                SAQLASH
+            </button>
+        </div>
+    </div>
+
+    <!-- RULES MODAL -->
+    <div id="rulesModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-md p-6 rounded-3xl gold-metallic-border relative text-slate-200 text-sm leading-relaxed max-h-[80vh] overflow-y-auto">
+            <button onclick="closeModal('rulesModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-bold font-cinzel text-amber-400 mb-3 text-center">O'YIN QOIDALARI</h3>
+            <ul class="space-y-2 list-disc list-inside text-xs sm:text-sm">
+                <li>O'yin 15 ta savoldan iborat.</li>
+                <li>Har bir savol uchun 30 soniya vaqt beriladi.</li>
+                <li><b>5-savol (1 000 000 so'm)</b> va <b>10-savol (32 000 000 so'm)</b> kuyib ketmaydigan bosqichlardir.</li>
+                <li>Sizda 3 ta yordam imkoniyati bor: 50:50, Do'stga qo'ng'iroq va Zal yordami.</li>
+                <li>Istalgan vaqtda "Pullarni olish" tugmasini bosib o'yinni to'xtatishingiz mumkin.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- GAME OVER / VICTORY MODAL -->
+    <div id="resultModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-3d-card w-full max-w-sm p-8 rounded-3xl gold-metallic-border text-center shadow-[0_0_50px_rgba(234,179,8,0.4)]">
+            <div id="resultIcon" class="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto mb-4 text-3xl text-amber-400">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 id="resultTitle" class="text-xl font-black font-cinzel text-amber-400 mb-2">O'YIN YAKUNLANDI!</h2>
+            <p id="resultSubtitle" class="text-xs text-slate-300 mb-4">Siz qo'lga kiritgan umumiy yutuq:</p>
+            <div id="resultPrize" class="text-3xl font-black font-cinzel text-amber-300 mb-6 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)]">
+                0 SO'M
+            </div>
+            <button onclick="restartGame()" class="ruby-gold-button w-full py-3 rounded-xl font-black text-amber-300 text-lg font-cinzel shadow-xl mb-3">
+                YANGI O'YIN <i class="fas fa-redo ml-2 text-sm"></i>
+            </button>
+            <button onclick="returnToMainMenuFromGameOver()" class="menu-button w-full py-2.5 rounded-xl font-bold text-slate-300 text-sm">
+                ASOSIY MENYU
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT GAME LOGIC ==================== -->
+    <script>
+        // WEB AUDIO SYNTHESIZER FOR SOUND EFFECTS
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            updateAudioUI();
+        }
+        
+        function toggleAudioFromSettings() {
+            const checkbox = document.getElementById('settingsSoundToggle');
+            soundEnabled = checkbox.checked;
+            updateAudioUI();
+        }
+
+        function updateAudioUI() {
+            const icon = document.getElementById('soundIcon');
+            const checkbox = document.getElementById('settingsSoundToggle');
+            if (soundEnabled) {
+                if(icon) icon.className = 'fas fa-volume-up text-lg text-amber-400';
+                if(checkbox) checkbox.checked = true;
+            } else {
+                if(icon) icon.className = 'fas fa-volume-mute text-lg text-red-500';
+                if(checkbox) checkbox.checked = false;
+            }
+        }
+
+        function playSynthSound(type) {
+            if (!soundEnabled) return;
+            initAudioCtx();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'tick') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'select') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.08);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'correct') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.06);
+                    osc.stop(now + idx * 0.06 + 0.4);
+                });
+                playCrowdApplause();
+            } else if (type === 'wrong') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        // SYNTHESIZED AUDIENCE APPLAUSE / CROWD CHEER
+        function playCrowdApplause() {
+            if (!soundEnabled) return;
+            initAudioCtx();
+            if (!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 1.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1200;
+            filter.Q.value = 1.0;
+            const gain = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+            gain.gain.setValueAtTime(0.01, now);
+            gain.gain.linearRampToValueAtTime(0.35, now + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 1.4);
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start(now);
+            noise.stop(now + 1.5);
+        }
+
+        // MONEY PRIZE STEPS
+        const PRIZE_STEPS = [
+            { level: 1, prize: "100 000 SO'M", val: 100000, safe: false },
+            { level: 2, prize: "200 000 SO'M", val: 200000, safe: false },
+            { level: 3, prize: "300 000 SO'M", val: 300000, safe: false },
+            { level: 4, prize: "500 000 SO'M", val: 500000, safe: false },
+            { level: 5, prize: "1 000 000 SO'M", val: 1000000, safe: true },
+            { level: 6, prize: "2 000 000 SO'M", val: 2000000, safe: false },
+            { level: 7, prize: "4 000 000 SO'M", val: 4000000, safe: false },
+            { level: 8, prize: "8 000 000 SO'M", val: 8000000, safe: false },
+            { level: 9, prize: "16 000 000 SO'M", val: 16000000, safe: false },
+            { level: 10, prize: "32 000 000 SO'M", val: 32000000, safe: true },
+            { level: 11, prize: "64 000 000 SO'M", val: 64000000, safe: false },
+            { level: 12, prize: "125 000 000 SO'M", val: 125000000, safe: false },
+            { level: 13, prize: "250 000 000 SO'M", val: 250000000, safe: false },
+            { level: 14, prize: "500 000 000 SO'M", val: 500000000, safe: false },
+            { level: 15, prize: "1 000 000 000 SO'M", val: 1000000000, safe: true }
+        ];
+
+        // EXPANDED QUESTION POOLS
+        const QUESTION_POOLS = [
+            [{ q: "O'zbekiston Respublikasining poytaxti qaysi shahar?", options: ["Toshkent", "Samarqand", "Buxoro", "Xiva"], correct: "Toshkent" }, { q: "Dunyo xaritasida O'zbekiston qaysi qit'ada joylashgan?", options: ["Osiyo", "Yevropa", "Afrika", "Amerika"], correct: "Osiyo" }],
+            [{ q: "O'zbekiston milliy valyutasi nima?", options: ["So'm", "Manat", "Tenge", "Rubl"], correct: "So'm" }, { q: "O'zbekiston bayrog'ida nechta yulduz tasvirlangan?", options: ["12 ta", "10 ta", "15 ta", "8 ta"], correct: "12 ta" }],
+            [{ q: "Buyuk ipak yo'lining eng mashhur qadimiy shaharlaridan biri qaysi?", options: ["Samarqand", "Kalkutta", "Pekin", "Toshkent"], correct: "Samarqand" }, { q: "Navoiylik mashhur shoir Alisher Navoiy qaysi asrda yashagan?", options: ["XV asr", "XIII asr", "XVII asr", "XIX asr"], correct: "XV asr" }],
+            [{ q: "Amir Temur qaysi shahrida tug'ilgan?", options: ["Shahrisabz (Kesh)", "Samarqand", "Andijon", "Buxoro"], correct: "Shahrisabz (Kesh)" }, { q: "\"Xamsa\" dostonlar to'plami muallifi kim?", options: ["Alisher Navoiy", "Zahiriddin Bobur", "Lutfiy", "Muqimiy"], correct: "Alisher Navoiy" }],
+            [{ q: "O'zbekiston Mustaqillik kuni qachon nishonlanadi?", options: ["1-sentabr", "8-dekabr", "21-mart", "9-may"], correct: "1-sentabr" }, { q: "Boburnoma asarining muallifi kim?", options: ["Zahiriddin Muhammad Bobur", "Mirzo Ulug'bek", "Alisher Navoiy", "Ogahiy"], correct: "Zahiriddin Muhammad Bobur" }],
+            [{ q: "Mirzo Ulug'bek tomonidan barpo etilgan rasadxona qaysi shaharda joylashgan?", options: ["Samarqand", "Buxoro", "Toshkent", "Qarshi"], correct: "Samarqand" }, { q: "Dunyo bo'yicha eng chuqur ko'l qaysi?", options: ["Baykal", "Kaspiy", "Orol", "Viktoriya"], correct: "Baykal" }],
+            [{ q: "Qoraqalpog'iston Respublikasining poytaxti qaysi shahar?", options: ["Nukus", "Xo'jayli", "Beruniy", "To'rtko'l"], correct: "Nukus" }, { q: "Inson tanasidagi eng katta organ qaysi?", options: ["Teri", "Jigar", "Yurak", "O'pka"], correct: "Teri" }],
+            [{ q: "Tibbiyot ilmining otasi deb tan olingan alloma kim?", options: ["Abu Ali ibn Sino", "Al-Xorazmiy", "Abu Rayhon Beruniy", "Al-Farobiy"], correct: "Abu Ali ibn Sino" }, { q: "Algebra faniga kim asos solgan?", options: ["Al-Xorazmiy", "Mirzo Ulug'bek", "Ibn Sino", "Ahmad Farg'oniy"], correct: "Al-Xorazmiy" }],
+            [{ q: "Pifagor teoremasi qaysi shakl uchun amal qiladi?", options: ["To'g'ri burchakli uchburchak", "Teng yonli uchburchak", "Kvadrat", "Aylana"], correct: "To'g'ri burchakli uchburchak" }, { q: "Quyosh tizimidagi eng katta planeta qaysi?", options: ["Yupiter", "Saturn", "Mars", "Venera"], correct: "Yupiter" }],
+            [{ q: "O'zbekiston Respublikasining Konstitutsiyasi qachon qabul qilingan?", options: ["1992-yil 8-dekabr", "1991-yil 1-sentabr", "1993-yil 10-dekabr", "1990-yil 24-mart"], correct: "1992-yil 8-dekabr" }, { q: "Kimyo elementlar davriy jadvalini kim yaratgan?", options: ["Dmitriy Mendeleyev", "Albert Eynshteyn", "Isaak Nyuton", "Niels Bor"], correct: "Dmitriy Mendeleyev" }],
+            [{ q: "Dunyoning yetti mo'jizasidan biri bo'lgan Bobilning osma bog'lari qaysi davlat hududida bo'lgan?", options: ["Iroq", "Misr", "Yunoniston", "Eron"], correct: "Iroq" }, { q: "Quyoshga eng yaqin joylashgan planeta qaysi?", options: ["Merkuriy", "Venera", "Mars", "Yer"], correct: "Merkuriy" }],
+            [{ q: "Nobel mukofoti topshirilmaydigan soha qaysi?", options: ["Matematika", "Fizika", "Tibbiyot", "Tinchlik"], correct: "Matematika" }, { q: "Orol dengiziga quyiladigan ikkita asosiy daryo qaysilar?", options: ["Amudaryo va Sirdaryo", "Zarafshon va Chirchiq", "Volga va Don", "Yangi va Nil"], correct: "Amudaryo va Sirdaryo" }],
+            [{ q: "Dunyo okeanining eng chuqur nuqtasi - Mariana botig'ining chuqurligi taxminan qancha?", options: ["11 000 metr", "8 848 metr", "15 000 metr", "5 000 metr"], correct: "11 000 metr" }, { q: "AQShning birinchi prezidenti kim bo'lgan?", options: ["Jorj Vashington", "Avraam Linkoln", "Tomas Jefferson", "Benjamin Frankling"], correct: "Jorj Vashington" }],
+            [{ q: "Inson DNKsi zanjirining tuzilishini kimlar birinchi bo'lib kashf etishgan?", options: ["Uotson va Krik", "Paster va Kox", "Lamark va Darvin", "Mendel va Morgan"], correct: "Uotson va Krik" }, { q: "Yer yadrosining asosiy tarkibiy metallari qaysilar?", options: ["Temir va Nikel", "Oltin va Kumush", "Miz va Rux", "Alyuminiy va Titaniyu"], correct: "Temir va Nikel" }],
+            [{ q: "BMTning Nyu-Yorkdagi bosh qarorgohi binosi rasman qaysi yilda ochilgan?", options: ["1952-yil", "1945-yil", "1960-yil", "1939-yil"], correct: "1952-yil" }, { q: "O'zbekistonda birinchi marta bosma kitob qaysi shaharda va qachon chop etilgan?", options: ["Toshkentda 1871-yil", "Samarqandda 1901-yil", "Buxoroda 1890-yil", "Xivada 1885-yil"], correct: "Toshkentda 1871-yil" }]
+        ];
+
+        // GAME STATE
+        let currentLevel = 0;
+        let selectedQuestions = [];
+        let currentQuestion = null;
+        let currentShuffledOptions = [];
+        let timerInterval = null;
+        let timerSeconds = 30;
+        let usedLifelines = { f50: false, phone: false, audience: false };
+        let isAnsweringLocked = false;
+        let isPaused = false;
+        let wasPausedBeforeMenuRequest = false;
+
+        // USER PERSISTENCE & STATS
+        function getPlayerName() { return localStorage.getItem('millionaire_player_name') || 'SHAHZOD'; }
+        function setPlayerName(name) {
+            if (!name || name.trim() === '') name = 'SHAHZOD';
+            localStorage.setItem('millionaire_player_name', name.trim().toUpperCase());
+            updateProfileUI();
+        }
+        function getUserStats() {
+            const defaultStats = { gamesPlayed: 0, wins: 0, maxPrizeVal: 0, maxPrizeStr: "0 SO'M", totalEarnings: 0 };
+            const saved = localStorage.getItem('millionaire_user_stats');
+            return saved ? JSON.parse(saved) : defaultStats;
+        }
+        function saveUserStats(stats) {
+            localStorage.setItem('millionaire_user_stats', JSON.stringify(stats));
+            updateStatsUI();
+        }
+        function updateProfileUI() {
+            const pName = getPlayerName();
+            const hdName = document.getElementById('headerPlayerName');
+            const mnName = document.getElementById('menuPlayerName');
+            const pInput = document.getElementById('playerNameInput');
+            const eInput = document.getElementById('editPlayerNameInput');
+            if(hdName) hdName.textContent = pName;
+            if(mnName) mnName.textContent = pName;
+            if(pInput) pInput.value = pName;
+            if(eInput) eInput.value = pName;
+        }
+        function updateStatsUI() {
+            const stats = getUserStats();
+            document.getElementById('statGamesPlayed').textContent = stats.gamesPlayed;
+            document.getElementById('statWins').textContent = stats.wins;
+            document.getElementById('statMaxPrize').textContent = stats.maxPrizeStr;
+        }
+
+        // NAVIGATION FLOW
+        function saveNameAndGoToMenu() {
+            const inp = document.getElementById('playerNameInput').value;
+            setPlayerName(inp);
+            showMainMenu();
+        }
+        
+        function saveProfileName() {
+            const inp = document.getElementById('editPlayerNameInput').value;
+            setPlayerName(inp);
+            closeModal('profileModal');
+        }
+
+        function showMainMenu() {
+            document.getElementById('splashScreen').classList.add('hidden');
+            document.getElementById('mainHeader').classList.add('hidden');
+            document.getElementById('gameMainArea').classList.add('hidden');
+            
+            const menu = document.getElementById('mainMenuScreen');
+            menu.classList.remove('hidden');
+            // small trick to force reflow for transition if we had opacity transitions
+        }
+
+        function startGameFromMenu() {
+            document.getElementById('mainMenuScreen').classList.add('hidden');
+            document.getElementById('mainHeader').classList.remove('hidden');
+            document.getElementById('gameMainArea').classList.remove('hidden');
+            restartGame();
+        }
+
+        function returnToMainMenuFromGameOver() {
+            closeModal('resultModal');
+            showMainMenu();
+        }
+
+        // START / RESTART GAME
+        function restartGame() {
+            closeModal('resultModal');
+            closeModal('pauseModal');
+            closeModal('returnMenuModal');
+            isPaused = false;
+            currentLevel = 0;
+            usedLifelines = { f50: false, phone: false, audience: false };
+            resetLifelineUI();
+
+            selectedQuestions = QUESTION_POOLS.map(pool => {
+                const randIndex = Math.floor(Math.random() * pool.length);
+                return pool[randIndex];
+            });
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentLevel >= 15) { gameVictory(); return; }
+
+            isAnsweringLocked = false;
+            isPaused = false;
+            currentQuestion = selectedQuestions[currentLevel];
+            const prizeObj = PRIZE_STEPS[currentLevel];
+
+            document.getElementById('currentLevelNum').textContent = `${currentLevel + 1}/15`;
+            document.getElementById('currentPrizeText').textContent = prizeObj.prize;
+            document.getElementById('questionNumBadge').textContent = currentLevel + 1;
+            document.getElementById('questionText').textContent = currentQuestion.q;
+
+            const opts = [...currentQuestion.options];
+            for (let i = opts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [opts[i], opts[j]] = [opts[j], opts[i]];
+            }
+            currentShuffledOptions = opts;
+
+            ['A', 'B', 'C', 'D'].forEach((letter, index) => {
+                const btn = document.getElementById(`optBtn${letter}`);
+                const txt = document.getElementById(`optText${letter}`);
+                btn.className = "tilt-card glass-3d-card p-4 rounded-2xl border border-amber-500/40 hover:border-amber-400 text-left flex items-center transition group relative overflow-hidden";
+                btn.style.display = "flex";
+                txt.textContent = currentShuffledOptions[index];
+            });
+
+            startTimer();
+        }
+
+        // TIMER SYSTEM
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 30;
+            updateTimerUI();
+            resumeTimer();
+        }
+
+        function resumeTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(isPaused) return;
+                timerSeconds--;
+                updateTimerUI();
+                if (timerSeconds <= 5 && timerSeconds > 0) { playSynthSound('tick'); }
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    playSynthSound('wrong');
+                    gameOver(false, "Vaqt tugadi!");
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const display = document.getElementById('timerDisplay');
+            const progress = document.getElementById('timerProgressBar');
+            display.textContent = timerSeconds;
+            const pct = (timerSeconds / 30) * 100;
+            progress.style.width = `${pct}%`;
+
+            if (timerSeconds <= 10) { display.classList.add('text-red-500', 'timer-warning'); } 
+            else { display.classList.remove('timer-warning'); display.classList.add('text-red-500'); }
+        }
+
+        // PAUSE & RETURN TO MENU
+        function togglePause() {
+            if (isAnsweringLocked || !currentQuestion) return;
+            isPaused = !isPaused;
+            if (isPaused) {
+                clearInterval(timerInterval);
+                openModal('pauseModal');
+            } else {
+                closeModal('pauseModal');
+                resumeTimer();
+            }
+        }
+
+        function takeMoneyAndExitFromPause() {
+            isPaused = false;
+            closeModal('pauseModal');
+            takeMoneyAndExit();
+        }
+
+        function requestReturnToMenu() {
+            if (isAnsweringLocked || !currentQuestion) return;
+            wasPausedBeforeMenuRequest = isPaused;
+            if (!isPaused) {
+                isPaused = true;
+                clearInterval(timerInterval);
+            }
+            openModal('returnMenuModal');
+        }
+
+        function confirmReturnToMenu() {
+            closeModal('returnMenuModal');
+            isPaused = false;
+            clearInterval(timerInterval);
+            showMainMenu();
+        }
+
+        function cancelReturnToMenu() {
+            closeModal('returnMenuModal');
+            if (!wasPausedBeforeMenuRequest) {
+                isPaused = false;
+                resumeTimer();
+            }
+        }
+
+        // ANSWER SELECTION
+        function selectOption(letter) {
+            if (isAnsweringLocked || isPaused) return;
+            isAnsweringLocked = true;
+            clearInterval(timerInterval);
+            playSynthSound('select');
+
+            const btn = document.getElementById(`optBtn${letter}`);
+            const selectedText = document.getElementById(`optText${letter}`).textContent;
+
+            btn.className = "tilt-card p-4 rounded-2xl border-2 border-amber-400 bg-amber-500/30 text-left flex items-center transition relative overflow-hidden shadow-[0_0_20px_rgba(250,204,21,0.6)]";
+
+            setTimeout(() => {
+                const isCorrect = (selectedText === currentQuestion.correct);
+                if (isCorrect) {
+                    playSynthSound('correct');
+                    btn.className = "tilt-card p-4 rounded-2xl border-2 border-emerald-400 bg-emerald-600/40 text-left flex items-center transition relative overflow-hidden shadow-[0_0_30px_rgba(52,211,153,0.8)]";
+                    setTimeout(() => { currentLevel++; loadQuestion(); }, 1500);
+                } else {
+                    playSynthSound('wrong');
+                    btn.className = "tilt-card p-4 rounded-2xl border-2 border-red-500 bg-red-700/50 text-left flex items-center transition relative overflow-hidden shadow-[0_0_30px_rgba(239,68,68,0.8)]";
+                    ['A', 'B', 'C', 'D'].forEach(l => {
+                        const txtEl = document.getElementById(`optText${l}`);
+                        if (txtEl.textContent === currentQuestion.correct) {
+                            document.getElementById(`optBtn${l}`).className = "tilt-card p-4 rounded-2xl border-2 border-emerald-400 bg-emerald-600/40 text-left flex items-center transition relative overflow-hidden shadow-[0_0_20px_rgba(52,211,153,0.6)]";
+                        }
+                    });
+                    setTimeout(() => { gameOver(false, "Noto'g'ri javob!"); }, 1800);
+                }
+            }, 1200);
+        }
+
+        // LIFELINES
+        function resetLifelineUI() {
+            const btn50 = document.getElementById('life5050');
+            const btnP = document.getElementById('lifePhone');
+            const btnA = document.getElementById('lifeAudience');
+            btn50.disabled = false; btnP.disabled = false; btnA.disabled = false;
+            btn50.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button font-black text-amber-300 text-xs sm:text-sm flex flex-col items-center justify-center transition hover:scale-105";
+            btnP.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button text-amber-300 text-base sm:text-lg flex items-center justify-center transition hover:scale-105";
+            btnA.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl ruby-gold-button text-amber-300 text-base sm:text-lg flex items-center justify-center transition hover:scale-105";
+        }
+
+        function use5050() {
+            if (usedLifelines.f50 || isAnsweringLocked || isPaused) return;
+            usedLifelines.f50 = true;
+            playSynthSound('select');
+            const btn50 = document.getElementById('life5050');
+            btn50.disabled = true;
+            btn50.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-900 border border-slate-700 text-slate-600 opacity-50 flex items-center justify-center cursor-not-allowed";
+
+            let wrongLetters = [];
+            ['A', 'B', 'C', 'D'].forEach((l, idx) => {
+                if (currentShuffledOptions[idx] !== currentQuestion.correct) wrongLetters.push(l);
+            });
+            wrongLetters.sort(() => 0.5 - Math.random());
+            document.getElementById(`optBtn${wrongLetters[0]}`).style.display = "none";
+            document.getElementById(`optBtn${wrongLetters[1]}`).style.display = "none";
+        }
+
+        function usePhone() {
+            if (usedLifelines.phone || isAnsweringLocked || isPaused) return;
+            usedLifelines.phone = true;
+            playSynthSound('select');
+            const btnP = document.getElementById('lifePhone');
+            btnP.disabled = true;
+            btnP.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-900 border border-slate-700 text-slate-600 opacity-50 flex items-center justify-center cursor-not-allowed";
+            document.getElementById('friendDialogText').textContent = `"Salom, do'stim! Meningcha, bu savolning to'g'ri javobi - ${currentQuestion.correct}. 90% ishonchim komil!"`;
+            openModal('friendModal');
+        }
+
+        function useAudience() {
+            if (usedLifelines.audience || isAnsweringLocked || isPaused) return;
+            usedLifelines.audience = true;
+            playSynthSound('select');
+            const btnA = document.getElementById('lifeAudience');
+            btnA.disabled = true;
+            btnA.className = "w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-900 border border-slate-700 text-slate-600 opacity-50 flex items-center justify-center cursor-not-allowed";
+
+            let p1 = Math.floor(Math.random() * 20) + 60; 
+            let rem = 100 - p1;
+            let p2 = Math.floor(Math.random() * rem);
+            rem -= p2;
+            let p3 = Math.floor(Math.random() * rem);
+            let p4 = rem - p3;
+
+            let pMap = { A: 0, B: 0, C: 0, D: 0 };
+            ['A', 'B', 'C', 'D'].forEach((l, idx) => { if (currentShuffledOptions[idx] === currentQuestion.correct) pMap[l] = p1; });
+
+            let otherLetters = ['A', 'B', 'C', 'D'].filter(l => pMap[l] === 0);
+            pMap[otherLetters[0]] = p2; pMap[otherLetters[1]] = p3; pMap[otherLetters[2]] = p4;
+
+            ['A', 'B', 'C', 'D'].forEach(l => {
+                document.getElementById(`audPct${l}`).textContent = `${pMap[l]}%`;
+                document.getElementById(`audBar${l}`).style.height = `${pMap[l]}%`;
+            });
+            openModal('audienceModal');
+        }
+
+        // CASH OUT & GAME OVER
+        function takeMoneyAndExit() {
+            if (isAnsweringLocked || isPaused) return;
+            clearInterval(timerInterval);
+            let prizeNumeric = 0; let prizeStr = "0 SO'M";
+            if (currentLevel > 0) {
+                const prevStep = PRIZE_STEPS[currentLevel - 1];
+                prizeNumeric = prevStep.val; prizeStr = prevStep.prize;
+            }
+            gameOver(true, "Siz o'yinni o'z ixtiyoringiz bilan to'xtatdingiz!", prizeStr, prizeNumeric);
+        }
+
+        function gameOver(isCashout = false, reason = "", overridePrizeStr = null, overridePrizeVal = null) {
+            clearInterval(timerInterval);
+            let finalPrizeStr = "0 SO'M"; let finalPrizeVal = 0;
+            if (overridePrizeStr !== null) {
+                finalPrizeStr = overridePrizeStr; finalPrizeVal = overridePrizeVal;
+            } else {
+                if (currentLevel >= 10) { finalPrizeStr = PRIZE_STEPS[9].prize; finalPrizeVal = PRIZE_STEPS[9].val; } 
+                else if (currentLevel >= 5) { finalPrizeStr = PRIZE_STEPS[4].prize; finalPrizeVal = PRIZE_STEPS[4].val; }
+            }
+
+            document.getElementById('resultTitle').textContent = isCashout ? "TABRIKLAYMIZ!" : "O'YIN YAKUNLANDI!";
+            document.getElementById('resultSubtitle').textContent = reason || "Siz erishgan umumiy yutuq:";
+            document.getElementById('resultPrize').textContent = finalPrizeStr;
+            if (window.saveScoreToCloud) window.saveScoreToCloud(finalPrizeStr, finalPrizeVal, false);
+            openModal('resultModal');
+        }
+
+        function gameVictory() {
+            clearInterval(timerInterval);
+            const maxPrize = PRIZE_STEPS[14];
+            document.getElementById('resultTitle').textContent = "S IZ MILLIONERSIZ!";
+            document.getElementById('resultSubtitle').textContent = "Barcha 15 ta savolga to'g'ri javob berdingiz!";
+            document.getElementById('resultPrize').textContent = maxPrize.prize;
+            if (window.confetti) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            if (window.saveScoreToCloud) window.saveScoreToCloud(maxPrize.prize, maxPrize.val, true);
+            openModal('resultModal');
+        }
+
+        // MODALS RENDERING
+        function openMoneyLadderModal() {
+            const container = document.getElementById('ladderList');
+            container.innerHTML = '';
+            [...PRIZE_STEPS].reverse().forEach(step => {
+                const isCurrent = (step.level - 1 === currentLevel);
+                const isPassed = (step.level - 1 < currentLevel);
+                let bgClass = "bg-slate-900/80 border-slate-800 text-slate-400";
+                if (isCurrent) bgClass = "bg-amber-500/30 border-amber-400 text-amber-300 font-bold shadow-[0_0_15px_rgba(245,158,11,0.5)]";
+                else if (isPassed) bgClass = "bg-emerald-950/40 border-emerald-600/40 text-emerald-400";
+                else if (step.safe) bgClass = "bg-red-950/40 border-amber-500/50 text-amber-400 font-bold";
+                const item = document.createElement('div');
+                item.className = `flex justify-between items-center p-2.5 rounded-xl border ${bgClass} text-xs sm:text-sm font-cinzel`;
+                item.innerHTML = `<div class="flex items-center space-x-2"><span class="w-6 text-center font-bold">${step.level}</span><span>${step.safe ? '★' : '•'}</span></div><span class="font-black">${step.prize}</span>`;
+                container.appendChild(item);
+            });
+            openModal('moneyLadderModal');
+        }
+
+        window.renderLeaderboard = function() {
+            const container = document.getElementById('leaderboardList');
+            if (!container) return;
+            const data = window.globalLeaderboardData || [];
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-slate-400"><i class="fas fa-crown text-3xl text-amber-500/50 mb-2"></i><p>Hozircha o'yinchilar yo'q.</p></div>`;
+                return;
+            }
+            container.innerHTML = '';
+            data.forEach((item, index) => {
+                let badge = `${index + 1}`;
+                let rankColor = "bg-slate-900 border-amber-500/30 text-slate-300";
+                if (index === 0) { badge = "🥇"; rankColor = "bg-amber-950/80 border-amber-400 text-amber-300 gold-metallic-border"; } 
+                else if (index === 1) { badge = "🥈"; rankColor = "bg-slate-900 border-slate-400 text-slate-200"; } 
+                else if (index === 2) { badge = "🥉"; rankColor = "bg-amber-950/40 border-amber-800 text-amber-600"; }
+
+                const cCode = (item.countryCode || 'uz').toLowerCase();
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 rounded-xl border ${rankColor}`;
+                row.innerHTML = `<div class="flex items-center space-x-2.5"><span class="font-black text-base w-6 text-center">${badge}</span><img src="https://flagcdn.com/w40/${cCode}.png" class="w-5 h-3.5 object-cover rounded shadow border border-amber-500/30"><div><div class="font-bold text-slate-100">${item.name || 'Bilimdon'}</div><div class="text-[10px] text-slate-400">${item.gamesPlayed || 1} ta o'yin</div></div></div><div class="text-right"><div class="font-black font-cinzel text-amber-400 text-sm">${item.highestPrizeStr || "0 SO'M"}</div></div>`;
+                container.appendChild(row);
+            });
+        };
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openLeaderboardModal() { if (window.renderLeaderboard) window.renderLeaderboard(); openModal('leaderboardModal'); }
+        function openStatsModal() { updateStatsUI(); openModal('statsModal'); }
+        function openProfileModal() { updateProfileUI(); openModal('profileModal'); }
+        function openRulesModal() { openModal('rulesModal'); }
+        function openSettingsModal() { openModal('settingsModal'); }
+
+        // GEOLOCATION DETECTION
+        async function detectUserCountry() {
+            let savedCountry = localStorage.getItem('millionaire_country_code');
+            let savedCountryName = localStorage.getItem('millionaire_country_name');
+            if (savedCountry) { updateCountryFlagUI(savedCountry, savedCountryName); return; }
+            try {
+                const res = await fetch('https://freeipapi.com/api/json'); const data = await res.json();
+                if (data && data.countryCode) {
+                    const code = data.countryCode.toLowerCase(); const name = data.countryName || data.countryCode;
+                    localStorage.setItem('millionaire_country_code', code); localStorage.setItem('millionaire_country_name', name);
+                    updateCountryFlagUI(code, name); return;
+                }
+            } catch(e) {
+                try {
+                    const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
+                    if (data && data.country_code) {
+                        const code = data.country_code.toLowerCase(); const name = data.country_name || data.country_code;
+                        localStorage.setItem('millionaire_country_code', code); localStorage.setItem('millionaire_country_name', name);
+                        updateCountryFlagUI(code, name); return;
+                    }
+                } catch(err) {}
+            }
+            localStorage.setItem('millionaire_country_code', 'uz'); localStorage.setItem('millionaire_country_name', "O'zbekiston");
+            updateCountryFlagUI('uz', "O'zbekiston");
+        }
+        function updateCountryFlagUI(code, name) {
+            const hFlag = document.getElementById('headerCountryFlag');
+            const mFlag = document.getElementById('menuCountryFlag');
+            if (hFlag) { hFlag.src = `https://flagcdn.com/w40/${code.toLowerCase()}.png`; hFlag.alt = name; hFlag.title = name; }
+            if (mFlag) { mFlag.src = `https://flagcdn.com/w40/${code.toLowerCase()}.png`; mFlag.alt = name; mFlag.title = name; }
+        }
+
+        // CANVAS 3D BACKGROUND PARTICLES
+        const canvas = document.getElementById('bgCanvas'); const ctx = canvas.getContext('2d'); let particles = [];
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5; this.speedY = -Math.random() * 0.8 - 0.2;
+                this.opacity = Math.random() * 0.6 + 0.2; this.color = Math.random() > 0.5 ? '#facc15' : '#ef4444';
+            }
+            update() { this.y += this.speedY; if (this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; } }
+            draw() { ctx.fillStyle = this.color; ctx.globalAlpha = this.opacity; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+        }
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // TILT EFFECT FOR CARDS
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left - rect.width / 2; const y = e.clientY - rect.top - rect.height / 2;
+                card.style.transform = `perspective(1000px) rotateX(${-y / 15}deg) rotateY(${x / 15}deg) scale(1.02)`;
+            });
+            card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)'; });
+        });
+
+        // INIT LOAD CHECK
+        window.addEventListener('DOMContentLoaded', () => {
+            detectUserCountry();
+            updateProfileUI();
+            updateStatsUI();
+            const existingName = localStorage.getItem('millionaire_player_name');
+            if (existingName) {
+                // Return user immediately sees Main Menu
+                showMainMenu();
+            } else {
+                // New user stays on Splash screen
+                document.getElementById('splashScreen').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
